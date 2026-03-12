@@ -30,51 +30,25 @@ function LoginScreen() {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="flex items-center justify-center min-h-screen z-10 relative px-4"
-    >
-      <motion.div 
-        initial={{ y: 40, opacity: 0, scale: 0.95 }}
-        animate={{ y: 0, opacity: 1, scale: 1 }}
-        transition={{ type: "spring", stiffness: 100, damping: 20 }}
-        className="w-full max-w-md p-8 bg-[#12121a]/80 border border-white/10 rounded-3xl backdrop-blur-xl shadow-2xl relative overflow-hidden"
-      >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center min-h-screen z-10 relative px-4">
+      <motion.div initial={{ y: 40, opacity: 0, scale: 0.95 }} animate={{ y: 0, opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 100, damping: 20 }} className="w-full max-w-md p-8 bg-[#12121a]/80 border border-white/10 rounded-3xl backdrop-blur-xl shadow-2xl relative overflow-hidden">
         <div className="absolute -top-20 -left-20 w-64 h-64 bg-indigo-500/20 blur-[80px] rounded-full pointer-events-none" />
         <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none" />
 
         <div className="relative z-10 text-center mb-8">
-          <motion.h1 
-            initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}
-            className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-emerald-400 mb-2"
-          >
+          <motion.h1 initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-emerald-400 mb-2">
             Apex-AI
           </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-            className="text-slate-400 text-sm uppercase tracking-widest font-semibold"
-          >
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-slate-400 text-sm uppercase tracking-widest font-semibold">
             Enter the Terminal
           </motion.p>
         </div>
 
         <form onSubmit={handleAuth} className="relative z-10 flex flex-col gap-5">
-          <input 
-            type="email" placeholder="Email Address" value={email}
-            onChange={(e) => setEmail(e.target.value)} required
-            className="w-full px-5 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-white transition-all placeholder:text-slate-600"
-          />
-          <input 
-            type="password" placeholder="Password" value={password}
-            onChange={(e) => setPassword(e.target.value)} required
-            className="w-full px-5 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-white transition-all placeholder:text-slate-600"
-          />
+          <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full px-5 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-white transition-all placeholder:text-slate-600" />
+          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full px-5 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-white transition-all placeholder:text-slate-600" />
           {message && <p className={`text-sm text-center font-bold ${message.includes('Error') || message.includes('Invalid') ? 'text-red-400' : 'text-emerald-400'}`}>{message}</p>}
-          <motion.button 
-            whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }}
-            type="submit" disabled={loading}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all disabled:opacity-50"
-          >
+          <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }} type="submit" disabled={loading} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all disabled:opacity-50">
             {loading ? "Authenticating..." : (isSignUp ? "Create Account" : "Access Dashboard")}
           </motion.button>
         </form>
@@ -108,20 +82,18 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#09090b] text-slate-100 font-sans selection:bg-indigo-500 selection:text-white relative overflow-x-hidden">
-      <motion.div 
-        animate={{ x: mousePos.x - 300, y: mousePos.y - 300 }}
-        transition={{ type: "tween", ease: "easeOut", duration: 0.5 }}
-        className="pointer-events-none fixed top-0 left-0 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] z-0"
-      />
+      <motion.div animate={{ x: mousePos.x - 300, y: mousePos.y - 300 }} transition={{ type: "tween", ease: "easeOut", duration: 0.5 }} className="pointer-events-none fixed top-0 left-0 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] z-0" />
       <AnimatePresence mode="wait">
-        {!session ? <LoginScreen key="login" /> : <Dashboard key="dashboard" />}
+        {/* Pass the session to the Dashboard! */}
+        {!session ? <LoginScreen key="login" /> : <Dashboard key="dashboard" session={session} />}
       </AnimatePresence>
     </div>
   );
 }
 
 // --- 3. THE DASHBOARD ---
-function Dashboard() {
+// Receive the session prop here
+function Dashboard({ session }) {
   const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -129,7 +101,9 @@ function Dashboard() {
   const [activeTicker, setActiveTicker] = useState('AAPL');
   const [watchlist, setWatchlist] = useState([]);
 
-  useEffect(() => { fetchWatchlist(); }, []);
+  useEffect(() => { 
+    if(session) fetchWatchlist(); 
+  }, [session]);
 
   useEffect(() => {
     const fetchPrediction = async () => {
@@ -137,7 +111,6 @@ function Dashboard() {
       setError(null);
       setChartData([]); 
       try {
-        // Updated to your Live Render URL
         const response = await fetch(`https://apex-ai-backend-1.onrender.com/predict/${activeTicker}`);
         if (!response.ok) throw new Error('API is waking up or failed. Please try again in 30 seconds.');
         const result = await response.json();
@@ -160,23 +133,29 @@ function Dashboard() {
         });
 
         setChartData(formattedData);
-      } catch (error) { 
-        setError(error.message); 
-      } finally { 
-        setLoading(false); 
-      }
+      } catch (error) { setError(error.message); } finally { setLoading(false); }
     };
     fetchPrediction();
   }, [activeTicker]);
 
+  // PRIVATE WATCHLIST FETCH
   const fetchWatchlist = async () => {
-    const { data, error } = await supabase.from('watchlist').select('*');
+    const { data, error } = await supabase
+      .from('watchlist')
+      .select('*')
+      .eq('user_id', session.user.id); // Only get THIS user's stocks
+      
     if (!error && data) setWatchlist(data);
   };
 
+  // PRIVATE WATCHLIST SAVE
   const addToWatchlist = async () => {
     if (watchlist.some(item => item.ticker === activeTicker)) return alert(`${activeTicker} is already saved!`);
-    const { error } = await supabase.from('watchlist').insert([{ ticker: activeTicker }]);
+    
+    const { error } = await supabase
+      .from('watchlist')
+      .insert([{ ticker: activeTicker, user_id: session.user.id }]); // Save with user ID
+      
     if (error) alert("Error saving to database!");
     else fetchWatchlist();
   };
@@ -193,7 +172,8 @@ function Dashboard() {
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="max-w-5xl mx-auto p-4 md:p-8 relative z-10">
-      <motion.div variants={itemVariants} className="flex justify-end mb-4">
+      <motion.div variants={itemVariants} className="flex justify-between items-center mb-4">
+         <span className="text-slate-500 text-xs tracking-widest uppercase">Logged in as: {session.user.email}</span>
          <button onClick={handleSignOut} className="text-slate-500 hover:text-red-400 text-xs font-bold tracking-widest transition-colors cursor-pointer">
            [ SIGN OUT ]
          </button>
