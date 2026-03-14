@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 import { supabase } from './supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -95,6 +95,7 @@ export default function App() {
 // Receive the session prop here
 function Dashboard({ session }) {
   const [chartData, setChartData] = useState([]);
+  const [indicators, setIndicators] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchInput, setSearchInput] = useState('AAPL');
@@ -110,6 +111,7 @@ function Dashboard({ session }) {
       setLoading(true);
       setError(null);
       setChartData([]); 
+      setIndicators(null);
       try {
         const response = await fetch(`https://apex-ai-backend-1.onrender.com/predict/${activeTicker}`);
         if (!response.ok) throw new Error('API is waking up or failed. Please try again in 30 seconds.');
@@ -136,6 +138,22 @@ function Dashboard({ session }) {
           formattedData.push({ name: `Day +${dayCount}`, Actual: null, Predicted: predictionObj[key] });
           dayCount++;
         });
+
+        if (result.current_indicators) {
+          const ind = result.current_indicators;
+          let macdScore = Math.max(0, Math.min(100, 50 + (ind.MACD * 10)));
+          let trendScore = Math.max(0, Math.min(100, 50 + (((ind.Close - ind.Open) / ind.Open) * 5000)));
+          let volScore = Math.min(100, ((ind.High - ind.Low) / ind.Low) * 2000);
+          let volScale = Math.min(100, (ind.Volume / 1e6) * 5); // 5 points per million vol
+
+          setIndicators([
+            { subject: 'Momentum', A: ind.RSI || 50, fullMark: 100 },
+            { subject: 'Trend', A: macdScore || 50, fullMark: 100 },
+            { subject: 'Volatility', A: volScore || 50, fullMark: 100 },
+            { subject: 'Price Action', A: trendScore || 50, fullMark: 100 },
+            { subject: 'Volume Depth', A: volScale || 50, fullMark: 100 }
+          ]);
+        }
 
         setChartData(formattedData);
       } catch (error) { setError(error.message); } finally { setLoading(false); }
@@ -232,18 +250,40 @@ function Dashboard({ session }) {
       )}
 
       {!loading && chartData.length > 0 && (
-        <motion.div variants={itemVariants} className="w-full h-[550px] bg-[#12121a] border border-white/10 rounded-3xl p-6 relative overflow-hidden shadow-2xl backdrop-blur-xl">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 10, bottom: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff15" vertical={false} />
-              <XAxis dataKey="name" stroke="#64748b" tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} />
-              <YAxis domain={['auto', 'auto']} stroke="#64748b" tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(val) => `$${val.toFixed(0)}`} axisLine={false} tickLine={false} /> 
-              <Tooltip contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff20', borderRadius: '16px' }} itemStyle={{ fontWeight: 'bold' }} />
-              <Legend />
-              <Line type="monotone" name="Historical Price" dataKey="Actual" stroke="#818cf8" strokeWidth={4} dot={{ r: 5, fill: '#818cf8', stroke: '#12121a' }} />
-              <Line type="monotone" name="AI Forecast" dataKey="Predicted" stroke="#34d399" strokeWidth={4} strokeDasharray="8 8" dot={{ r: 5, fill: '#34d399', stroke: '#12121a' }} />
-            </LineChart>
-          </ResponsiveContainer>
+        <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-12">
+          {/* Main Chart */}
+          <div className="xl:col-span-2 h-[500px] bg-[#12121a] border border-white/10 rounded-3xl p-6 relative shadow-2xl backdrop-blur-xl">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 20, right: 30, left: 10, bottom: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff15" vertical={false} />
+                <XAxis dataKey="name" stroke="#64748b" tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} />
+                <YAxis domain={['auto', 'auto']} stroke="#64748b" tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(val) => `$${val.toFixed(0)}`} axisLine={false} tickLine={false} /> 
+                <Tooltip contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff20', borderRadius: '16px' }} itemStyle={{ fontWeight: 'bold' }} />
+                <Legend />
+                <Line type="monotone" name="Historical Price" dataKey="Actual" stroke="#818cf8" strokeWidth={4} dot={{ r: 5, fill: '#818cf8', stroke: '#12121a' }} />
+                <Line type="monotone" name="AI Forecast" dataKey="Predicted" stroke="#34d399" strokeWidth={4} strokeDasharray="8 8" dot={{ r: 5, fill: '#34d399', stroke: '#12121a' }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Radar Chart: Quant AI View */}
+          <div className="h-[500px] bg-[#12121a] border border-white/10 rounded-3xl p-6 relative shadow-2xl backdrop-blur-xl flex flex-col items-center justify-center">
+            <h3 className="text-white font-bold tracking-widest uppercase text-sm mb-2 text-center">Quant AI Analysis</h3>
+            <p className="text-slate-500 text-xs uppercase tracking-wider text-center mb-6">Multivariate Indicator Flow</p>
+            {indicators ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <RadarChart cx="50%" cy="50%" outerRadius="75%" data={indicators}>
+                  <PolarGrid stroke="#ffffff20" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#34d399', fontSize: 11 }} />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                  <Radar name="Quant Power" dataKey="A" stroke="#818cf8" fill="#818cf8" fillOpacity={0.4} />
+                  <Tooltip contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff20', borderRadius: '16px' }} itemStyle={{ color: '#fff', fontWeight: 'bold' }} />
+                </RadarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-slate-500 text-xs flex items-center justify-center h-full">Awaiting multi-variable data...</p>
+            )}
+          </div>
         </motion.div>
       )}
     </motion.div>
