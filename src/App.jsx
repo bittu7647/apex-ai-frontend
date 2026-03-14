@@ -117,7 +117,7 @@ function Dashboard({ session }) {
         if (result.error) throw new Error(result.error);
         
         const formattedData = [];
-        const historyObj = result.historical_close[activeTicker];
+        const historyObj = result.historical_close;
         Object.keys(historyObj).forEach((dateString) => {
           const date = new Date(dateString);
           formattedData.push({ name: `${date.getMonth() + 1}/${date.getDate()}`, Actual: historyObj[dateString], Predicted: null });
