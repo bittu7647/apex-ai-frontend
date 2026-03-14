@@ -96,6 +96,7 @@ export default function App() {
 function Dashboard({ session }) {
   const [chartData, setChartData] = useState([]);
   const [indicators, setIndicators] = useState(null);
+  const [confidence, setConfidence] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchInput, setSearchInput] = useState('AAPL');
@@ -112,6 +113,7 @@ function Dashboard({ session }) {
       setError(null);
       setChartData([]); 
       setIndicators(null);
+      setConfidence(null);
       try {
         const response = await fetch(`https://apex-ai-backend-1.onrender.com/predict/${activeTicker}`);
         if (!response.ok) throw new Error('API is waking up or failed. Please try again in 30 seconds.');
@@ -153,6 +155,10 @@ function Dashboard({ session }) {
             { subject: 'Price Action', A: trendScore || 50, fullMark: 100 },
             { subject: 'Volume Depth', A: volScale || 50, fullMark: 100 }
           ]);
+        }
+
+        if (result.ai_confidence) {
+          setConfidence(result.ai_confidence);
         }
 
         setChartData(formattedData);
@@ -236,6 +242,41 @@ function Dashboard({ session }) {
           ★ Save Target
         </motion.button>
       </motion.div>
+
+      <AnimatePresence>
+        {!loading && confidence && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-8">
+            <div className="bg-[#12121a] border border-white/10 p-5 rounded-2xl shadow-xl flex flex-col md:flex-row items-center gap-6 relative overflow-hidden">
+              <div className={`absolute top-0 left-0 w-2 h-full ${confidence.signal === 'BULLISH' ? 'bg-emerald-500' : confidence.signal === 'BEARISH' ? 'bg-red-500' : 'bg-slate-500'}`} />
+              
+              <div className="flex-shrink-0 text-center pl-4">
+                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">AI Conviction</p>
+                <h3 className={`text-4xl font-extrabold ${confidence.signal === 'BULLISH' ? 'text-emerald-400' : confidence.signal === 'BEARISH' ? 'text-red-400' : 'text-slate-300'}`}>
+                  {confidence.score}%
+                </h3>
+              </div>
+              
+              <div className="w-full flex-grow">
+                <div className="flex justify-between items-end mb-2">
+                  <span className={`font-bold text-lg uppercase tracking-wide ${confidence.signal === 'BULLISH' ? 'text-emerald-400' : confidence.signal === 'BEARISH' ? 'text-red-400' : 'text-slate-300'}`}>
+                    TARGET {confidence.signal}
+                  </span>
+                  <span className="text-slate-400 text-sm font-medium">Projected Move: {confidence.projected_move > 0 ? '+' : ''}{confidence.projected_move}%</span>
+                </div>
+                
+                <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }} 
+                    animate={{ width: `${confidence.score}%` }} 
+                    transition={{ duration: 1.5, ease: "easeOut" }} 
+                    className={`h-full rounded-full ${confidence.signal === 'BULLISH' ? 'bg-gradient-to-r from-emerald-600 to-emerald-400' : confidence.signal === 'BEARISH' ? 'bg-gradient-to-r from-red-600 to-red-400' : 'bg-gradient-to-r from-slate-600 to-slate-400'}`} 
+                  />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {error && <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-xl mb-6 font-medium backdrop-blur-md">⚠ {error}</motion.div>}
