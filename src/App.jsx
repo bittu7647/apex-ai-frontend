@@ -114,7 +114,12 @@ function Dashboard({ session }) {
         const response = await fetch(`https://apex-ai-backend-1.onrender.com/predict/${activeTicker}`);
         if (!response.ok) throw new Error('API is waking up or failed. Please try again in 30 seconds.');
         const result = await response.json();
+        
         if (result.error) throw new Error(result.error);
+        if (result.detail) throw new Error(typeof result.detail === 'string' ? result.detail : JSON.stringify(result.detail));
+        if (!result.historical_close || !result.predictions) {
+          throw new Error("Invalid API response format. (Did you hard refresh the page?) Raw: " + JSON.stringify(result).substring(0, 100));
+        }
         
         const formattedData = [];
         const historyObj = result.historical_close;
