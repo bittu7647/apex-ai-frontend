@@ -69,8 +69,13 @@ export default function App() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    // 1. Mouse tracker
     const handleMouseMove = (e) => setMousePos({ x: e.clientX, y: e.clientY });
     window.addEventListener('mousemove', handleMouseMove);
+    
+    // 2. Pre-wake sleepy Render server in the background
+    fetch('https://apex-ai-backend-1.onrender.com/').catch(() => {});
+    
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
