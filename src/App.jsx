@@ -151,13 +151,14 @@ function Dashboard({ session }) {
 
         if (result.current_indicators) {
           const ind = result.current_indicators;
-          let macdScore = Math.max(0, Math.min(100, 50 + (ind.MACD * 10)));
-          let trendScore = Math.max(0, Math.min(100, 50 + (((ind.Close - ind.Open) / ind.Open) * 5000)));
-          let volScore = Math.min(100, ((ind.High - ind.Low) / ind.Low) * 2000);
-          let volScale = Math.min(100, (ind.Volume / 1e6) * 5); // 5 points per million vol
+          const r = (v) => Math.round(v * 100) / 100;
+          let macdScore = r(Math.max(0, Math.min(100, 50 + (ind.MACD * 10))));
+          let trendScore = r(Math.max(0, Math.min(100, 50 + (((ind.Close - ind.Open) / ind.Open) * 5000))));
+          let volScore = r(Math.min(100, ((ind.High - ind.Low) / ind.Low) * 2000));
+          let volScale = r(Math.min(100, (ind.Volume / 1e6) * 5));
 
           setIndicators([
-            { subject: 'Momentum', A: ind.RSI || 50, fullMark: 100 },
+            { subject: 'Momentum', A: r(ind.RSI) || 50, fullMark: 100 },
             { subject: 'Trend', A: macdScore || 50, fullMark: 100 },
             { subject: 'Volatility', A: volScore || 50, fullMark: 100 },
             { subject: 'Price Action', A: trendScore || 50, fullMark: 100 },
@@ -295,8 +296,8 @@ function Dashboard({ session }) {
       {loading && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center h-[500px] bg-white/5 border border-white/5 rounded-3xl mb-8 backdrop-blur-sm text-center p-6">
           <motion.div animate={{ borderRadius: ["20%", "50%", "20%"], rotate: [0, 180, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="w-16 h-16 bg-gradient-to-tr from-indigo-500 to-emerald-400 shadow-[0_0_30px_rgba(52,211,153,0.5)] mb-8" />
-          <p className="text-white font-bold tracking-widest uppercase text-sm animate-pulse">Running Neural Network</p>
-          <p className="text-slate-500 text-xs mt-3 uppercase tracking-wider">Predicting {activeTicker} via LSTM. First run may take a minute...</p>
+          <p className="text-white font-bold tracking-widest uppercase text-sm animate-pulse">Analyzing Market Data</p>
+          <p className="text-slate-500 text-xs mt-3 uppercase tracking-wider">Apex AI is scanning {activeTicker} — hang tight</p>
         </motion.div>
       )}
 
