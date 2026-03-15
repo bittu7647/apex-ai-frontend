@@ -104,8 +104,8 @@ function Dashboard({ session }) {
   const [confidence, setConfidence] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [searchInput, setSearchInput] = useState('AAPL');
-  const [activeTicker, setActiveTicker] = useState('AAPL');
+  const [searchInput, setSearchInput] = useState('');
+  const [activeTicker, setActiveTicker] = useState('');
   const [watchlist, setWatchlist] = useState([]);
 
   useEffect(() => { 
@@ -113,6 +113,9 @@ function Dashboard({ session }) {
   }, [session]);
 
   useEffect(() => {
+    // Only fetch if activeTicker is explicitly set (no longer 'AAPL' by default)
+    if (!activeTicker) return;
+    
     const fetchPrediction = async () => {
       setLoading(true);
       setError(null);
@@ -242,10 +245,12 @@ function Dashboard({ session }) {
       )}
 
       <motion.div variants={itemVariants} className="flex justify-between items-end mb-6">
-        <h2 className="text-3xl font-bold text-white flex items-center gap-3">Target: <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">{activeTicker}</span></h2>
-        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }} onClick={addToWatchlist} className="px-5 py-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-xl text-sm font-bold flex items-center gap-2 backdrop-blur-sm transition-colors hover:bg-amber-500/20">
-          ★ Save Target
-        </motion.button>
+        <h2 className="text-3xl font-bold text-white flex items-center gap-3">Target: <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">{activeTicker ? activeTicker : 'None'}</span></h2>
+        {activeTicker && (
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }} onClick={addToWatchlist} className="px-5 py-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-xl text-sm font-bold flex items-center gap-2 backdrop-blur-sm transition-colors hover:bg-amber-500/20">
+            ★ Save Target
+          </motion.button>
+        )}
       </motion.div>
 
       <AnimatePresence>
