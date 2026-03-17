@@ -123,7 +123,9 @@ function Dashboard({ session }) {
       setIndicators(null);
       setConfidence(null);
       try {
-        const response = await fetch(`${API_URL}/predict/${activeTicker}`);
+        const response = await fetch(`${API_URL}/predict/${activeTicker}`, {
+          headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
         if (!response.ok) throw new Error('Prediction failed. Make sure uvicorn and ngrok are running on your laptop!');
         const result = await response.json();
         
