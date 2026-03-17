@@ -3,6 +3,9 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { supabase } from './supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Your ngrok URL — set this in .env as VITE_API_URL
+const API_URL = import.meta.env.VITE_API_URL;
+
 // --- 1. THE LOGIN SCREEN COMPONENT ---
 function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -73,9 +76,6 @@ export default function App() {
     const handleMouseMove = (e) => setMousePos({ x: e.clientX, y: e.clientY });
     window.addEventListener('mousemove', handleMouseMove);
     
-    // 2. Pre-wake sleepy Render server in the background
-    fetch('https://apex-ai-backend-1.onrender.com/').catch(() => {});
-    
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
@@ -123,8 +123,8 @@ function Dashboard({ session }) {
       setIndicators(null);
       setConfidence(null);
       try {
-        const response = await fetch(`https://apex-ai-backend-1.onrender.com/predict/${activeTicker}`);
-        if (!response.ok) throw new Error('API is waking up or failed. Please try again in 30 seconds.');
+        const response = await fetch(`${API_URL}/predict/${activeTicker}`);
+        if (!response.ok) throw new Error('Prediction failed. Make sure uvicorn and ngrok are running on your laptop!');
         const result = await response.json();
         
         if (result.error) throw new Error(result.error);
